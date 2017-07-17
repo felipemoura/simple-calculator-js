@@ -1,17 +1,6 @@
 $(document).ready(function () {
-
-  var currentTime = new Date();
-
   // returns the year (four digits)
-  document.getElementById("year").innerHTML = currentTime.getFullYear()
-
-
-
-  var stack = [];
-  stack.push(0);
-
-  var operations = [];
-  var dot = false;
+  document.getElementById("year").innerHTML = new Date().getFullYear();
 
   $('#_0').on('click',function() {  callForOperation(0);  });
   $('#_1').on('click',function() {  callForOperation(1);  });
@@ -29,46 +18,115 @@ $(document).ready(function () {
   $('#_sum').on('click',function() {  callForOperation('+');  });
   $('#_sub').on('click',function() {  callForOperation('-');  });
   $('#_equal').on('click',function() {  callForOperation('=');  });
-
   $('#_ac').on('click',function() { callForOperation('ac'); });
-  $('#_ce').on('click',function() { callForOperation('ce'); });
-  
+  $('#_plusMinus').on('click',function() { callForOperation('-+'); });
 
-  // Operations of the calculator
-  function callForOperation (param) {
-    $('.screen').empty();
+  // variables
+  var stack = [];
+  var numbers = [];
+  var operations = [];
+  var dot = false;
 
-    if (param === 'ac') {
-      stack = [];
-      dot = false;
+  // clean scren
+  function cleanParameters () {
+    stack = [];
+    operations = [];
+    dot = false;
+  }
 
-    } else if (param === 'ce') {
-      stack = [];
-      stack.push(0);
-      dot = false;
+  function doOperation (arg1, arg2, operator) {
+    arg1 = (arg1 == null) ? 0 : Number(arg1);
+    arg2 = (arg2 == null) ? 0 : Number(arg2);
+    let aux;
 
-    } else if  ((param === '+') || (param === '/') || (param === '-') || (param === 'x') || (param === '=')) {
-      if (stack.length > 0) {
-        stack = [];
-        var temp = stack.join("");
-        stack.push (temp);
-        stack.push (param);
-      }
+    switch(operator) {
+        case '+':
+                  aux = arg1+arg2; 
+                  break;
+        case '-':
+                  aux = arg1-arg2; 
+                  break;
+        case 'x':
+                  aux = arg1*arg2; 
+                  break;
+        case '/':
+                  aux = arg1/arg2; 
+                  break;
+    } 
+    return aux; //(aux.length <= 12) ? aux : "Error";
+  }
 
-    } else {
-      if ((param === '.') && (dot === false)) {
-        stack.push(param);
-        dot = true;
-      } else if ((param === '.') && (dot === true)) {
-        // continue;
-      } else {
-        stack.push(param);
-      }
-    }
-
+  function repaint(){
+    // repaint screen
     $.each(stack, function (index, key) {
       $('.screen').append(key);
     });
   }
 
+  // Operations of the calculator
+  function callForOperation (param) {
+    // clean screen
+    $('.screen').empty();
+
+    // clean parameters 
+    if (param === 'ac') { 
+      cleanParameters ();
+
+    } else if (param === '-+') {
+      let temp = (-1) * Number(stack.join(""));
+      stack = [];
+      stack = temp.toString().split("");
+
+
+    // operation 
+    } else if ( (param === '+') || (param === '/') || (param === '-') || (param === 'x') ) {
+      if (stack.length > 0) {
+        if (numbers.length > 0) {
+          result = doOperation (numbers.pop(), stack.join (""), operations.pop() );
+        } else {
+          result = stack.join ("");
+        }
+        numbers.push (result);
+
+      } else {
+        numbers.push (0);
+      }
+      operations.push (param);
+      stack = [];
+      dot = false;
+
+    // EQUAL - result of operation
+    } else if (param === '=') {
+      if (numbers.length > 0 && operations.length > 0) {
+        result = doOperation (numbers.pop(), stack.join (""), operations.pop() );
+        stack = [];
+        dot = false;
+        stack.push (result);
+      }
+
+    } else {
+      // DOT - DECIMAL
+      if ((param === '.') && (dot === false)) {
+        if (stack.length == 0) {
+          stack.push(0);
+        }
+        stack.push(param);
+        dot = true;
+
+      } else if ((param === '.') && (dot === true) || (stack.length > 12) || ( (stack.length == 1) && (param == 0) ) ) {
+        // continue;
+        // do nothing
+
+      // numbers
+      } else {
+        if ( (stack.length == 1) && (param != 0) && (stack[0] == 0) ){
+          stack.pop();
+        } 
+        stack.push(param);
+      }
+    }
+
+    (stack.length <= 0) ? $('.screen').append (0) : repaint() ;
+  }
+// done
 });
