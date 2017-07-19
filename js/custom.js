@@ -48,12 +48,14 @@ $(document).ready(function () {
                   break;
         case 'x':
                   aux = arg1*arg2; 
+                  aux = aux.toPrecision(4); 
                   break;
         case '/':
-                  aux = arg1/arg2; 
+                  aux = arg1/arg2;
+                  aux = aux.toPrecision(4); 
                   break;
     } 
-    return aux; //(aux.length <= 12) ? aux : "Error";
+    return aux;//(aux.toString().length <= 12) ? aux : "Error";
   }
 
   function repaint(){
@@ -113,7 +115,7 @@ $(document).ready(function () {
         stack.push(param);
         dot = true;
 
-      } else if ((param === '.') && (dot === true) || (stack.length > 12) || ( (stack.length == 1) && (param == 0) ) ) {
+      } else if ((param === '.') && (dot === true) || (stack.length > 12) || ( (stack.length == 1 && stack[0] == 0) && (param == 0) ) ) {
         // continue;
         // do nothing
 
